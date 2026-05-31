@@ -1,6 +1,6 @@
 # AutoRAGsearch
 
-An autonomous research agent that optimizes a RAG retrieval pipeline without any human in the loop — inspired by [Andrej Karpathy's Autoresearch](https://x.com/karpathy/status/1921368644069576888) concept. A single prompt launches Claude Code into a self-directed experiment loop that systematically searches for the best retrieval configuration, using **zero LLM API calls** during optimization.
+An autonomous research agent that optimizes a RAG retrieval pipeline without any human in the loop — inspired by [Andrej Karpathy's Autoresearch](https://github.com/karpathy/autoresearch) concept. A single prompt launches Claude Code into a self-directed experiment loop that systematically searches for the best retrieval configuration, using **zero LLM API calls** during optimization.
 
 Unlike grid search or Bayesian optimization tools (Optuna, Ray Tune) that exhaustively explore a predefined parameter space, AutoRAGsearch leverages the agent's reasoning to form hypotheses, interpret diagnostic signals, and navigate directly to the most promising regions of the search space — unconstrained by a fixed search grid.
 
