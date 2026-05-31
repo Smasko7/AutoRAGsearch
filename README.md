@@ -2,6 +2,10 @@
 
 An autonomous research agent that optimizes a RAG retrieval pipeline without any human in the loop — inspired by [Andrej Karpathy's Autoresearch](https://x.com/karpathy/status/1921368644069576888) concept. A single prompt launches Claude Code into a self-directed experiment loop that systematically searches for the best retrieval configuration, using **zero LLM API calls** during optimization.
 
+Unlike grid search or Bayesian optimization tools (Optuna, Ray Tune) that exhaustively explore a predefined parameter space, AutoRAGsearch leverages the agent's reasoning to form hypotheses, interpret diagnostic signals, and navigate directly to the most promising regions of the search space — unconstrained by a fixed search grid.
+
+AutoRAGsearch is **git-native**: every configuration that improves the score is immediately committed to version control. The full optimization history lives in `git log`, the best configuration is always on the latest commit, and any improvement can be rolled back with a single command.
+
 ---
 
 ## Concept
@@ -13,10 +17,25 @@ The idea is simple: give an AI coding agent a well-defined optimization objectiv
 1. Claude Code is invoked with an initial prompt pointing it to `CLAUDE.md`
 2. `CLAUDE.md` defines the optimization target, the search space, the experiment protocol, and the convergence criterion — the full loop the agent must execute
 3. The agent autonomously runs experiments: forms a hypothesis, edits `rag_pipeline.py`, evaluates, interprets results, commits improvements, and decides what to try next
-4. No human input is needed between experiments — the agent reads its own experiment history, diagnoses weaknesses in the current metrics, and navigates the search space accordingly
+4. No human in the loop needed between experiments — the agent reads its own experiment history, diagnoses weaknesses in the current metrics, and navigates the search space accordingly
 5. The loop terminates when the convergence criterion is met (no improvement in 10 consecutive experiments) or after a set number of experiments
 
 Every evaluation is **purely local** — no LLM API calls, no external services. The optimization signal comes entirely from retrieval metrics computed against a fixed QA benchmark.
+
+---
+
+## Connection to Karpathy's Autoresearch
+
+AutoRAGsearch maps directly onto the two-file structure at the core of Karpathy's Autoresearch concept:
+
+| AutoRAGsearch file | Role | Karpathy's equivalent | Edited by |
+|---|---|---|---|
+| `CLAUDE.md` | Defines the optimization objective, search space, experiment protocol, and convergence criterion | The research brief — what a human researcher hands to the agent | **Human** |
+| `rag_pipeline.py` | All pipeline parameters — the only thing the agent may change | The experiment script / hypothesis file — what the agent iterates on | **Agent** |
+| `evaluate.py` | Scores each configuration against the benchmark | The evaluation harness / scorer — fixed, never touched | Neither |
+| `results/experiment_strategies.md` | The agent's running log of hypotheses, outcomes, and reasoning | The paper draft / research narrative the agent accumulates | Agent |
+
+The human's job is to write `CLAUDE.md` well. The agent's job is to iterate `rag_pipeline.py` intelligently. Everything else is infrastructure.
 
 ---
 
@@ -55,8 +74,8 @@ The agent discovered that a **"retrieve more, rerank fewer"** strategy — expan
 
 ```
 AutoRAGsearch/
-├── CLAUDE.md                # Agent instructions: objective, protocol, search space, loop
-├── rag_pipeline.py          # The only file the agent may edit — all pipeline parameters live here
+├── CLAUDE.md                # Agent instructions: objective, protocol, search space, loop — This file is edited and iterated on by the human.
+├── rag_pipeline.py          # The only file the agent may edit — all pipeline parameters live here — This file is edited and iterated on by the agent.
 ├── evaluate.py              # Evaluation harness — DO NOT MODIFY
 ├── components/
 │   ├── chunkers.py          # Fixed, recursive, sentence chunking
@@ -153,6 +172,19 @@ The agent ran 20 experiments across all three phases. Phase 1 (Chunking) and Pha
 
 Full per-experiment strategies and outcomes: [`results/experiment_strategies.md`](results/experiment_strategies.md)
 Complete analysis: [`results/final_report.md`](results/final_report.md)
+
+---
+
+## Beyond RAG: Applicability to ML/DL Training Optimization
+
+The same two-file pattern applies to any optimization problem with a fast, local evaluation signal. Replacing `rag_pipeline.py` with a training configuration file and `evaluate.py` with a training/validation loop produces an autonomous hyperparameter tuning agent:
+
+- **Hyperparameter tuning** — the agent edits learning rate, batch size, optimizer, and scheduler settings; the evaluator runs a short training job and reports validation loss or accuracy
+- **Neural architecture search** — the agent edits layer counts, widths, activation functions, or attention heads; the evaluator reports a downstream metric
+- **Data preprocessing pipelines** — the agent edits feature engineering steps, normalization strategies, or augmentation parameters; the evaluator reports model performance
+- **Fine-tuning strategies** — the agent edits LoRA rank, dropout, weight decay, or frozen layer configuration; the evaluator reports benchmark performance
+
+The key requirement is the same as in AutoRAGsearch: evaluation must be **fast and local** — no human in the loop, no expensive API calls per experiment. When that holds, experiments are effectively free and the agent can explore broadly, guided by reasoning rather than exhaustive enumeration.
 
 ---
 
