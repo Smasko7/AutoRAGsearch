@@ -53,8 +53,8 @@ Experiments are unlimited — there is no API cost.
 Before running the first experiment of a new session:
 
 1. **Agree on a run tag**: use today's date (e.g., `jun1`). The branch
-   `autoresearch/<tag>` must not already exist — this is a fresh session.
-2. **Create the branch**: `git checkout -b autoresearch/<tag>` from main.
+   `autoRAGsearch/<tag>` must not already exist — this is a fresh session.
+2. **Create the branch**: `git checkout -b autoRAGsearch/<tag>` from main.
 3. **Read the in-scope files** for full context:
    - `CLAUDE.md` — re-read it fully.
    - `rag_pipeline.py` — the file you will modify.
