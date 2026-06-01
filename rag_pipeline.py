@@ -15,10 +15,10 @@ CHUNK_SIZE = 512
 CHUNK_OVERLAP = 50
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 RETRIEVAL_METHOD = "dense"   # "bm25", "dense", or "hybrid"
-TOP_K = 10
+TOP_K = 20
 USE_RERANKER = False
 RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-RERANK_TOP_N = 10
+RERANK_TOP_N = 20
 
 # Vector DB settings
 CHROMA_PERSIST_DIR = "./chroma_db"
