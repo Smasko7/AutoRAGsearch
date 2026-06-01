@@ -59,14 +59,16 @@ Before running the first experiment of a new session:
    - `CLAUDE.md` — re-read it fully.
    - `rag_pipeline.py` — the file you will modify.
    - `evaluate.py` — the evaluation harness (read-only).
-   - `results/results.tsv` — prior experiment log (if it exists).
-   - `results/best_config.json` — the current best configuration
-     and its score (if it exists).
+   - `results/best_config.json` — the current best configuration and
+     its score, **only if it matches the current dataset** (check the
+     `data_dir` field). If it is from a different dataset, ignore it
+     and treat this session as starting from scratch.
 4. **Verify data**: Confirm the configured dataset directory (see
    `--data-dir` in `evaluate.py`) contains `qa.parquet` and
    `corpus.parquet`. If missing, tell the human.
-5. **Initialize results.tsv**: If not present, create it with just the
-   header row (columns defined in Output Format below).
+5. **Initialize results.tsv**: Always create a fresh `results/results.tsv`
+   with just the header row (columns defined in Output Format below).
+   Overwrite any existing file — it belongs to a previous session.
 6. Confirm setup is complete, then begin the experiment loop immediately.
 
 ## Fixed Components (DO NOT CHANGE)

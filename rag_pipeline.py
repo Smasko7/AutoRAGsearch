@@ -27,7 +27,8 @@ DISTANCE_METRIC = "cosine"  # fixed — do not change
 
 # === END CONFIGURATION ===
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "nq_subset")
+# DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "nq_subset")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "hotpotqa_subset")
 
 _pipeline = None
 
