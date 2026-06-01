@@ -48,6 +48,27 @@ Experiments are unlimited — there is no API cost.
 - `results/experiment_strategies.md` — append your strategy BEFORE each
   experiment here (see Strategy Log section below).
 
+## Session Setup
+
+Before running the first experiment of a new session:
+
+1. **Agree on a run tag**: use today's date (e.g., `jun1`). The branch
+   `autoresearch/<tag>` must not already exist — this is a fresh session.
+2. **Create the branch**: `git checkout -b autoresearch/<tag>` from main.
+3. **Read the in-scope files** for full context:
+   - `CLAUDE.md` — re-read it fully.
+   - `rag_pipeline.py` — the file you will modify.
+   - `evaluate.py` — the evaluation harness (read-only).
+   - `results/results.tsv` — prior experiment log (if it exists).
+   - `results/best_config.json` — the current best configuration
+     and its score (if it exists).
+4. **Verify data**: Confirm the configured dataset directory (see
+   `--data-dir` in `evaluate.py`) contains `qa.parquet` and
+   `corpus.parquet`. If missing, tell the human.
+5. **Initialize results.tsv**: If not present, create it with just the
+   header row (columns defined in Output Format below).
+6. Confirm setup is complete, then begin the experiment loop immediately.
+
 ## Fixed Components (DO NOT CHANGE)
 These components are locked and must not be modified by the agent:
 - **Embedding model**: `all-MiniLM-L6-v2` (sentence-transformers)
@@ -99,10 +120,43 @@ Before EVERY experiment, append a new entry to
 Fill in everything above "### Outcome" BEFORE running the experiment.
 Fill in the Outcome section AFTER seeing the results.
 
+### Crash and Timeout Handling
+
+**Crashes**: If `evaluate.py` crashes (import error, OOM, unexpected
+exception), use your judgment:
+- If it is something trivial to fix (typo, missing import, wrong type),
+  fix it and re-run. This does not count as an experiment.
+- If the pipeline configuration itself is fundamentally broken (e.g.,
+  an invalid parameter combination that cannot be patched), revert
+  `rag_pipeline.py`, log status `crash` in `results/results.tsv`, and
+  move on to the next idea.
+
+**Timeout**: If `evaluate.py` has not completed after 120 minutes, kill
+the process, treat the run as a crash, revert `rag_pipeline.py`, log
+status `crash`, and move on.
+
 ### Convergence Criterion
 The optimization loop ends when no improvement has been found in 10
 consecutive experiments. This is the stopping condition — not a time
 limit.
+
+### Never Stop
+
+Once the experiment loop has begun (after Session Setup), do NOT pause
+to ask the human if you should continue. Do NOT ask "should I keep
+going?" or "is this a good stopping point?". The human might be asleep
+or away from their computer and expects you to continue working
+indefinitely until manually stopped.
+
+You are a completely autonomous researcher. If an idea works, keep it.
+If it doesn't, discard it. You are advancing the branch so you can
+iterate. If you feel like you are getting stuck, think harder — re-read
+the in-scope files for new angles, try combining previous near-misses,
+revisit earlier phases, try more radical parameter changes. The loop
+runs until the convergence criterion is met or the human interrupts you.
+
+If you feel stuck and want to rewind to a previous state, you can —
+but do this very, very sparingly (if ever).
 
 ### Boundaries
 - Never modify `evaluate.py`, `data/`, or `utils/`.

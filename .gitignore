@@ -2,4 +2,4 @@ chroma_db/
 .chroma_config_hash
 __pycache__/
 *.pyc
-.claude/
+.claude/settings.local.json
