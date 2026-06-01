@@ -58,17 +58,24 @@ Before running the first experiment of a new session:
 3. **Read the in-scope files** for full context:
    - `CLAUDE.md` — re-read it fully.
    - `rag_pipeline.py` — the file you will modify.
-   - `evaluate.py` — the evaluation harness (read-only).
+   - `evaluate.py` — the evaluation harness (read-only). Note the
+     active dataset path in `DEFAULT_DATA_DIR` — you will need it to
+     verify `best_config.json`.
    - `results/best_config.json` — the current best configuration and
-     its score, **only if it matches the current dataset** (check the
-     `data_dir` field). If it is from a different dataset, ignore it
+     its score, **only if its `data_dir` field exactly matches
+     `evaluate.py`'s `DEFAULT_DATA_DIR`**. If the field is missing,
+     empty, or points to a different dataset, ignore the file entirely
      and treat this session as starting from scratch.
 4. **Verify data**: Confirm the configured dataset directory (see
-   `--data-dir` in `evaluate.py`) contains `qa.parquet` and
+   `DEFAULT_DATA_DIR` in `evaluate.py`) contains `qa.parquet` and
    `corpus.parquet`. If missing, tell the human.
-5. **Initialize results.tsv**: Always create a fresh `results/results.tsv`
-   with just the header row (columns defined in Output Format below).
-   Overwrite any existing file — it belongs to a previous session.
+5. **Initialize session files**: Always create fresh copies of both
+   files below, overwriting any existing content — they belong to a
+   previous session on this machine.
+   - `results/results.tsv` — header row only (columns defined in
+     Output Format below).
+   - `results/experiment_strategies.md` — single title line:
+     `# Experiment Strategies`
 6. Confirm setup is complete, then begin the experiment loop immediately.
 
 ## Fixed Components (DO NOT CHANGE)
@@ -88,8 +95,10 @@ These components are locked and must not be modified by the agent:
    independent variables at once.
 3. After editing `rag_pipeline.py`, run: `python evaluate.py`
 4. Read the retrieval_score from stdout. If it improves over the current
-   best (stored in `results/best_config.json`), run `git add -A && git
-   commit -m "improvement: <description> | score: <score>"`.
+   best, write the new best configuration to `results/best_config.json`
+   (all pipeline parameters + all metrics + a `data_dir` field set to
+   `evaluate.py`'s `DEFAULT_DATA_DIR`), then run
+   `git add -A && git commit -m "improvement: <description> | score: <score>"`.
 5. If the score does not improve, revert: `git checkout -- rag_pipeline.py`
 6. Log every experiment (kept or reverted) to `results/results.tsv`.
 7. Update the strategy entry in `experiment_strategies.md` with the
@@ -296,7 +305,8 @@ no improvement across all phases), produce:
    - Analysis of which phase contributed the most improvement
    - Top 3 most impactful individual experiments
    - Recommendations for further optimization
-2. `results/best_config.json` — the winning configuration as JSON.
+2. `results/best_config.json` — the winning configuration as JSON,
+   including a `data_dir` field set to `evaluate.py`'s `DEFAULT_DATA_DIR`.
 3. `results/experiment_strategies.md` should already be complete with
    the full research narrative of every experiment.
 4. Commit everything with message
