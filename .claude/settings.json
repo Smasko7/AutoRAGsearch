@@ -1,0 +1,29 @@
+  {    "permissions": {
+      "allow": [
+        "Bash(python evaluate.py*)",
+        "Bash(python -c*)",
+        "Bash(git checkout*)",
+        "Bash(git add*)",
+        "Bash(git commit*)",
+        "Bash(git branch*)",
+        "Bash(git status*)",
+        "Bash(git diff*)",
+        "Bash(git log*)",
+        "Bash(ls*)",
+        "Write(results/*)",
+        "Edit(results/*)",
+        "Write(rag_pipeline.py)",
+        "Edit(rag_pipeline.py)",
+        "Write(.chroma_config_hash)",
+        "Edit(.chroma_config_hash)"
+      ],
+      "deny": [
+        "Edit(evaluate.py)",
+        "Write(evaluate.py)",
+        "Edit(utils/*)",
+        "Write(utils/*)",
+        "Edit(data/*)",
+        "Write(data/*)"
+      ]
+    }
+  }
