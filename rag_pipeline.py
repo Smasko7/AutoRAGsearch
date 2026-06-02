@@ -12,7 +12,7 @@ import os
 # The agent will modify these values during optimization.
 CHUNK_METHOD = "fixed"
 CHUNK_SIZE = 512
-CHUNK_OVERLAP = 50
+CHUNK_OVERLAP = 256
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 RETRIEVAL_METHOD = "dense"   # "bm25", "dense", or "hybrid"
 TOP_K = 50
