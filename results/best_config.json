@@ -1,0 +1,22 @@
+{
+  "chunk_method": "fixed",
+  "chunk_size": 512,
+  "chunk_overlap": 256,
+  "embedding_model": "all-MiniLM-L6-v2",
+  "retrieval_method": "dense",
+  "top_k": 50,
+  "use_reranker": true,
+  "reranker_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
+  "rerank_top_n": 50,
+  "chroma_persist_dir": "./chroma_db",
+  "chroma_collection_name": "autoragsearch",
+  "distance_metric": "cosine",
+  "retrieval_score": 0.9288242464764871,
+  "recall_at_k": 0.96,
+  "precision_at_k": 0.03840000000000001,
+  "mrr": 0.9651666666666668,
+  "ndcg_at_k": 0.8976484929529741,
+  "map_at_k": 0.7768761120065385,
+  "hit_rate_at_k": 1.0,
+  "data_dir": "C:\\Users\\kosli\\PythonProjects\\Tsoumakas Project\\AutoRAGsearch\\data\\hotpotqa_subset"
+}
