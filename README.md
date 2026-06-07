@@ -211,3 +211,58 @@ The experiments were run on CPU, which constrained the candidate pool size (`top
 | `MRR` | Diagnostic | How high is the first relevant doc ranked? |
 | `MAP@k` | Diagnostic | Mean Average Precision across all relevant docs |
 | `Hit Rate@k` | Diagnostic | Did retrieval find at least one relevant doc? |
+
+---
+
+## HotpotQA Run & AutoRAG Comparison
+
+Full details are on the [`autorag-baseline-comparison-hotpot-qa`](../../tree/autorag-baseline-comparison-hotpot-qa) branch. The summary below covers the key results.
+
+### HotpotQA Results
+
+**Dataset:** 200 QA examples, 1992 corpus documents (188 used for evaluation after ground-truth matching).  
+**Experiments:** 14 fully autonomous experiments, 0 LLM API calls.
+
+| Experiment | Change | retrieval_score | Delta |
+|---|---|---:|---:|
+| Baseline | Dense top_k=50, cross-encoder rerank top_n=5 | 0.8903 | — |
+| Exp 2 | Increase rerank output top_n: 5 → 10 | 0.9156 | +0.0253 |
+| Exp 3 | Increase rerank output top_n: 10 → 15 | 0.9218 | +0.0062 |
+| **Exp 4** | **Increase rerank output top_n: 15 → 20** | **0.9257** | **+0.0039** |
+
+All improvement came from Phase 3 (Reranking). Chunking had no effect — the HotpotQA corpus consists of short documents that fit within a 512-token chunk. The key insight: HotpotQA's multi-hop structure requires two supporting documents per question, so a wider reranker output window (top_n=20) is necessary to capture both.
+
+**Best Configuration**
+
+| Parameter | Value |
+|---|---|
+| Chunking | Fixed, 512 tokens, 50-token overlap |
+| Embedding model | `all-MiniLM-L6-v2` |
+| Retrieval | Dense (ChromaDB cosine similarity), `top_k = 50` |
+| Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2`, `top_n = 20` |
+
+**Final Metrics**
+
+| Metric | Value |
+|---|---:|
+| retrieval_score | 0.9257 |
+| Recall@k | 0.9500 |
+| NDCG@k | 0.9014 |
+| MRR | 0.9596 |
+| MAP@k | 0.7765 |
+| Hit Rate@k | 1.0000 |
+
+### Comparison with AutoRAG (Official Framework)
+
+AutoRAG v0.3.22 was run on the same 188-sample HotpotQA subset with an equivalent search space: Token chunking (512/50), BM25 + dense (`all-MiniLM-L6-v2` via ChromaDB cosine) + HybridRRF fusion, and `cross-encoder/ms-marco-MiniLM-L-6-v2` reranking. AutoRAG's internal selection metric was set to `mean(retrieval_recall, retrieval_ndcg)` — mathematically identical to our optimization target — to ensure a fair, aligned comparison.
+
+| System | retrieval_score | recall@k | ndcg@k |
+|---|---:|---:|---:|
+| AutoRAG — HybridRRF + STReranker top_n=20 | 0.7826 | 0.9309 | 0.6344 |
+| **AutoRAGsearch** | **0.9257** | **0.9500** | **0.9014** |
+
+retrieval_score = 0.50 × recall@k + 0.50 × ndcg@k, computed identically for both systems on the same 188 samples.
+
+**AutoRAGsearch outperforms AutoRAG by +0.143 points (+18% relative).** Both systems reach similar recall (~0.93–0.95), but AutoRAGsearch's NDCG is dramatically higher (0.9014 vs 0.6344), reflecting far better ranking of relevant documents.
+
+The gap persists even with metric alignment because AutoRAG uses **sequential greedy node selection**: it picked HybridRRF top_k=50 as the best retrieval stage (highest composite score before reranking), but when the reranker then filtered 50→20 documents, recall dropped from 0.9628 to 0.9309. AutoRAGsearch evaluates every configuration end-to-end, so its optimization signal always reflects the true final output and avoids this trap.
