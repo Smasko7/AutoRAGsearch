@@ -2,7 +2,7 @@ import pandas as pd
 import re
 from pathlib import Path
 
-SOURCE_DIR = Path(r"C:\Users\user\Downloads\AutoRagSearch\AutoRAGsearch\data\hotpotqa_subset")
+SOURCE_DIR = Path(r"C:\Users\kosli\PythonProjects\Tsoumakas Project\AutoRAGsearch\data\hotpotqa_subset")
 OUTPUT_DIR = Path(r".\data\my_hotpotqa_subset_autorag")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 

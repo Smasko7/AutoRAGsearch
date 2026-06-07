@@ -66,3 +66,26 @@ Reranking contributed all measured improvement. Chunking changes had negligible 
 - If further optimization is allowed, test a stronger cross-encoder on GPU; CPU reranking was the runtime bottleneck.
 - Consider a deduplication-aware metric or pipeline option if repeated chunks from the same document become an issue on longer corpora.
 - For this subset, do not spend more time on chunk-size tuning unless the corpus changes to include longer source documents.
+
+---
+
+## Comparison with AutoRAG (Official Framework)
+
+To assess the quality of AutoRAGsearch's optimization, AutoRAG v0.3.22 was run on the same 188-sample HotpotQA subset with an equivalent search space: Token chunking (512/50), BM25 + dense (`all-MiniLM-L6-v2` via ChromaDB cosine) + HybridRRF fusion, and `cross-encoder/ms-marco-MiniLM-L-6-v2` reranking. AutoRAG explored top_k ∈ {20, 50}, hybrid fusion weights (4–80), and rerank_top_n ∈ {10, 20}. AutoRAG's selection metric was set to `mean(retrieval_recall, retrieval_ndcg)` — mathematically identical to our `0.5 × recall + 0.5 × ndcg` optimization target — to ensure a fair comparison.
+
+### Results
+
+| System | retrieval_score | recall@k | ndcg@k | Notes |
+|---|---:|---:|---:|---|
+| AutoRAG — HybridRRF + STReranker top_n=20 | 0.7826 | 0.9309 | 0.6344 | AutoRAG's best (optimizing our metric) |
+| **AutoRAGsearch** | **0.9257** | **0.9500** | **0.9014** | Agent-driven optimization |
+
+retrieval_score = 0.50 × recall@k + 0.50 × ndcg@k, computed identically for both systems on the same 188 samples.
+
+### Key Findings
+
+**AutoRAGsearch outperforms AutoRAG by +0.143 points (+18% relative).** The gap is almost entirely in NDCG (0.9014 vs 0.6344): both systems achieve comparable recall (~0.93–0.95), but AutoRAGsearch's surgical tuning of `rerank_top_n` produced dramatically better ranking quality.
+
+**Sequential greedy selection is AutoRAG's structural limitation.** AutoRAG selected HybridRRF with top_k=50 as the best retrieval stage (highest composite before reranking), but when the reranker then filtered 50→20 documents, some relevant ones were lost, lowering final recall from 0.9628 to 0.9309. AutoRAGsearch avoids this because it evaluates each configuration end-to-end, so the optimization signal always reflects the true final output.
+
+**Optimization strategy mattered more than search space.** Both systems had access to the same components. AutoRAGsearch's agent-driven loop — diagnosing weaknesses per experiment and iterating surgically on `rerank_top_n` — found the configuration that AutoRAG's automated grid search failed to identify even when given the correct objective.

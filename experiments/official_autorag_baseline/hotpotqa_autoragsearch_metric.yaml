@@ -1,0 +1,54 @@
+vectordb:
+  - name: minilm_chroma
+    db_type: chroma
+    embedding_model:
+      - type: huggingface
+        model_name: "${MODEL_SNAPSHOT}"
+    collection_name: autorag_v2_minilm
+    client_type: persistent
+    path: "${CHROMA_PATH}"
+    similarity_metric: cosine
+
+modules:
+  - module_type: llama_index_chunk
+    chunk_method: [Token]
+    chunk_size: [512]
+    chunk_overlap: [50]
+
+node_lines:
+  - node_line_name: retrieval_line
+    nodes:
+      - node_type: lexical_retrieval
+        strategy:
+          metrics: [retrieval_recall, retrieval_ndcg]
+          strategy: mean
+        top_k: [20, 50]
+        modules:
+          - module_type: bm25
+
+      - node_type: semantic_retrieval
+        strategy:
+          metrics: [retrieval_recall, retrieval_ndcg]
+          strategy: mean
+        top_k: [20, 50]
+        modules:
+          - module_type: vectordb
+            vectordb: minilm_chroma
+
+      - node_type: hybrid_retrieval
+        strategy:
+          metrics: [retrieval_recall, retrieval_ndcg]
+          strategy: mean
+        top_k: [20, 50]
+        modules:
+          - module_type: hybrid_rrf
+
+      - node_type: passage_reranker
+        strategy:
+          metrics: [retrieval_recall, retrieval_ndcg]
+          strategy: mean
+        top_k: [10, 20]
+        modules:
+          - module_type: pass_reranker
+          - module_type: sentence_transformer_reranker
+            model_name: cross-encoder/ms-marco-MiniLM-L-6-v2

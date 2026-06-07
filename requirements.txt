@@ -1,12 +1,11 @@
-langchain
-langchain-community
-langchain-google-genai
-google-generativeai
 sentence-transformers
 rank-bm25
 chromadb
 pandas
 numpy
-rouge-score
-bert-score
+pyarrow
 scikit-learn
+
+# AutoRAG comparison experiment
+AutoRAG==0.3.22
+llama-index-embeddings-huggingface
